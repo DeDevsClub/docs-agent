@@ -58,11 +58,23 @@ const store = new UpstashVector({
 url: process.env.UPSTASH_URL!,
 token: process.env.UPSTASH_TOKEN!
 })
-// await store.createIndex({
-// indexName: "embeddings",
-// // dimension: 256,
-// dimension: 1536,
-// });
+try {
+  await store.createIndex({
+    indexName: "embeddings",
+    dimension: 256, // Match your embedding model (text-embedding-3-small with dimensions: 256)
+  });
+  console.log("Upstash index 'embeddings' created successfully.");
+} catch (e: any) {
+  // Check if the error message indicates the index already exists
+  // This specific error message string might vary based on the Upstash client or service response
+  if (e.message && (e.message.includes("already exists") || e.message.includes("already created"))) {
+    console.log("Upstash index 'embeddings' already exists.");
+  } else {
+    console.error("Error creating Upstash index:", e);
+    // Depending on the error, you might want to re-throw it or handle it differently
+    // For now, we'll log and continue, but in production, you might want to stop
+  }
+}
 // Store embeddings with their corresponding metadata
 // Store embeddings with rich metadata for better organization and filtering
 // await store.upsert({
@@ -88,10 +100,10 @@ token: process.env.UPSTASH_TOKEN!
 //   })),
 // });
 
-// await store.upsert({
-//   indexName: "embeddings",
-//   vectors: embeddings,
-// });
+await store.upsert({
+  indexName: "embeddings",
+  vectors: embeddings,
+});
 
 // Export the Mastra instance
 export const mastra = new Mastra({
