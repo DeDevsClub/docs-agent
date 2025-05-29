@@ -50,7 +50,7 @@ const chunks = await docFromText.chunk({
  
 // Generate embeddings with OpenAI
 const { embeddings: openAIEmbeddings } = await embedMany({
-  model: openai.embedding("text-embedding-1.5-large"),
+  model: openai.embedding("text-embedding-3-large"),
   values: chunks.map((chunk) => chunk.text),
 });
 
