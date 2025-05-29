@@ -9,6 +9,6 @@
     "skipLibCheck": true,
     "outDir": "dist"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "mastra", "vector-store.ts"],
   "exclude": ["node_modules", "dist", ".mastra"]
 }

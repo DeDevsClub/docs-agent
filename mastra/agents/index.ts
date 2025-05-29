@@ -1,6 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 import { openai } from "@ai-sdk/openai";
 import { docsTool, vectorQueryTool } from "../tools";
+import { UPSTASH_PROMPT } from "@mastra/upstash";
 
 export const docsAgent = new Agent({
   name: "Docs Agent",
@@ -14,4 +15,15 @@ export const docsAgent = new Agent({
     docsTool,
     vectorQueryTool,
   },
+});
+
+ 
+export const ragAgent = new Agent({
+  name: 'RAG Agent',
+  model: openai('gpt-4o-mini'),
+  instructions: `
+  Process queries using the provided context. Structure responses to be concise and relevant.
+  ${UPSTASH_PROMPT}
+  `,
+  tools: { vectorQueryTool },
 });

@@ -10,6 +10,8 @@ The Docs Agent showcases how to:
 - Handle user queries about documentation
 - Integrate with OpenAI's API for natural language processing
 
-# Reference
+# References
 
 https://mastra.ai/blog/introducing-docs-chatbot
+https://mastra.ai/en/docs/rag/vector-databases
+https://mastra.ai/en/docs/rag/retrieval
