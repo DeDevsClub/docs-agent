@@ -34,25 +34,25 @@ const chunks = await docFromText.chunk({
 // arrays of numbers representing the semantic meaning of your text, 
 // ready for similarity searches in your vector database.
 // const { embeddings } = await embedMany({
-//   model: openai.embedding("text-embedding-3-small"),
+//   model: openai.embedding("bge-large-en-v1.5"),
 //   values: chunks.map((chunk) => chunk.text),
 // });
 
 // When storing embeddings, the vector database index must be configured to match the output size of your embedding model. 
 // If the dimensions do not match, you may get errors or data corruption.
 
-const { embeddings } = await embedMany({
-  model: openai.embedding("text-embedding-3-small", {
-    dimensions: 1536, // Only supported in text-embedding-3 and later
-  }),
-  values: chunks.map((chunk) => chunk.text),
-});
- 
-// Generate embeddings with OpenAI
-// const { embeddings: openAIEmbeddings } = await embedMany({
-//   model: openai.embedding("text-embedding-3-small"),
+// const { embeddings } = await embedMany({
+//   model: openai.embedding("bge-large-en-v1.5", {
+//     dimensions: 1024, // Only supported in text-embedding-3 and later
+//   }),
 //   values: chunks.map((chunk) => chunk.text),
 // });
+ 
+// Generate embeddings with OpenAI
+const { embeddings: openAIEmbeddings } = await embedMany({
+  model: openai.embedding("text-embedding-1.5-large"),
+  values: chunks.map((chunk) => chunk.text),
+});
 
 const upstashUrl = process.env.UPSTASH_URL;
 console.log(`Attempting to connect to Upstash at: ${upstashUrl}`); // Log the URL
@@ -62,10 +62,10 @@ url: upstashUrl!,
 token: process.env.UPSTASH_TOKEN!
 })
 try {
-  console.log(`Attempting to create Upstash index 'embeddings' with 256 dimensions...`);
+  console.log(`Attempting to create Upstash index 'embeddings' with 1024 dimensions...`);
   await store.createIndex({
     indexName: "embeddings",
-    dimension: 1536,
+    dimension: 1024,
   });
   console.log("Upstash index 'embeddings' creation attempt finished. Assuming success if no error thrown or caught specifically for 'already exists'.");
 } catch (e: any) {
@@ -78,32 +78,32 @@ try {
 }
 // Store embeddings with their corresponding metadata
 // Store embeddings with rich metadata for better organization and filtering
-// await store.upsert({
-//   indexName: "embeddings",
-//   vectors: embeddings,
-//   metadata: chunks.map((chunk: any) => ({
-//     // Basic content
-//     text: chunk.text,
-//     id: chunk.id,
+await store.upsert({
+  indexName: "embeddings",
+  vectors: openAIEmbeddings,
+  metadata: chunks.map((chunk: any) => ({
+    // Basic content
+    text: chunk.text,
+    id: chunk.id,
  
-//     // Document organization
-//     source: chunk.source,
-//     category: chunk.category,
+    // Document organization
+    source: chunk.source,
+    category: chunk.category,
  
-//     // Temporal metadata
-//     createdAt: new Date().toISOString(),
-//     version: "1.0",
+    // Temporal metadata
+    createdAt: new Date().toISOString(),
+    version: "1.0",
  
-//     // Custom fields
-//     language: chunk.language,
-//     author: chunk.author,
-//     confidenceScore: chunk.score,
-//   })),
-// });
+    // Custom fields
+    language: chunk.language,
+    author: chunk.author,
+    confidenceScore: chunk.score,
+  })),
+});
 
 await store.upsert({
   indexName: "embeddings",
-  vectors: embeddings,
+  vectors: openAIEmbeddings,
 });
 
 // Export the Mastra instance
