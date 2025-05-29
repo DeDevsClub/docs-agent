@@ -54,11 +54,11 @@ const { embeddings: openAIEmbeddings } = await embedMany({
   values: chunks.map((chunk) => chunk.text),
 });
 
-const upstashUrl = process.env.UPSTASH_URL;
+const upstashUrl = process.env.UPSTASH_URL!;
 console.log(`Attempting to connect to Upstash at: ${upstashUrl}`); // Log the URL
 
 const store = new UpstashVector({
-url: upstashUrl!,
+url: process.env.UPSTASH_URL!,
 token: process.env.UPSTASH_TOKEN!
 })
 try {
