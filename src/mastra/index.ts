@@ -9,10 +9,10 @@ import { embedMany } from "ai";
  
 // const doc = MDocument.fromText("Your plain text content...");
 
-const docFromText = MDocument.fromText("Your plain text content...");
-const docFromHTML = MDocument.fromHTML("<html>Your HTML content...</html>");
-const docFromMarkdown = MDocument.fromMarkdown("# Your Markdown content...");
-const docFromJSON = MDocument.fromJSON(`{ "key": "value" }`);
+const docFromText = MDocument.fromText(process.env.DOCUMENT_PATH || "https://docs.morpho.org/llms-full.txt");
+// const docFromHTML = MDocument.fromHTML("<html>Your HTML content...</html>");
+// const docFromMarkdown = MDocument.fromMarkdown("# Your Markdown content...");
+// const docFromJSON = MDocument.fromJSON(`{ "key": "value" }`);
 
 // const chunks = await docFromText.chunk({
 //   strategy: "recursive",
@@ -23,6 +23,12 @@ const docFromJSON = MDocument.fromJSON(`{ "key": "value" }`);
 //     // metadata: true, // Optionally extract metadata
 //   },
 // });
+
+const chunks = await docFromText.chunk({
+  strategy: "recursive",
+  size: 256,
+  overlap: 50,
+});
 
 // The embedding functions return vectors, 
 // arrays of numbers representing the semantic meaning of your text, 
@@ -35,34 +41,28 @@ const docFromJSON = MDocument.fromJSON(`{ "key": "value" }`);
 // When storing embeddings, the vector database index must be configured to match the output size of your embedding model. 
 // If the dimensions do not match, you may get errors or data corruption.
 
-// const { embeddings } = await embedMany({
-//   model: openai.embedding("text-embedding-3-small", {
-//     dimensions: 256, // Only supported in text-embedding-3 and later
-//   }),
-//   values: chunks.map((chunk) => chunk.text),
-// });
-
-const chunks = await docFromText.chunk({
-  strategy: "recursive",
-  size: 256,
-  overlap: 50,
+const { embeddings } = await embedMany({
+  model: openai.embedding("text-embedding-3-small", {
+    dimensions: 256, // Only supported in text-embedding-3 and later
+  }),
+  values: chunks.map((chunk) => chunk.text),
 });
  
 // Generate embeddings with OpenAI
-const { embeddings: openAIEmbeddings } = await embedMany({
-  model: openai.embedding("text-embedding-3-small"),
-  values: chunks.map((chunk) => chunk.text),
-});
+// const { embeddings: openAIEmbeddings } = await embedMany({
+//   model: openai.embedding("text-embedding-3-small"),
+//   values: chunks.map((chunk) => chunk.text),
+// });
 
 const store = new UpstashVector({
 url: process.env.UPSTASH_URL!,
 token: process.env.UPSTASH_TOKEN!
 })
-await store.createIndex({
-indexName: "embeddings",
-dimension: 256,
+// await store.createIndex({
+// indexName: "embeddings",
+// // dimension: 256,
 // dimension: 1536,
-});
+// });
 // Store embeddings with their corresponding metadata
 // Store embeddings with rich metadata for better organization and filtering
 // await store.upsert({
@@ -88,10 +88,10 @@ dimension: 256,
 //   })),
 // });
 
-await store.upsert({
-  indexName: "embeddings",
-  vectors: openAIEmbeddings,
-});
+// await store.upsert({
+//   indexName: "embeddings",
+//   vectors: embeddings,
+// });
 
 // Export the Mastra instance
 export const mastra = new Mastra({
