@@ -15,3 +15,4 @@ The Docs Agent showcases how to:
 https://mastra.ai/blog/introducing-docs-chatbot
 https://mastra.ai/en/docs/rag/vector-databases
 https://mastra.ai/en/docs/rag/retrieval
+https://console.upstash.com/vector

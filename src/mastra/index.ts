@@ -43,7 +43,7 @@ const chunks = await docFromText.chunk({
 
 const { embeddings } = await embedMany({
   model: openai.embedding("text-embedding-3-small", {
-    dimensions: 256, // Only supported in text-embedding-3 and later
+    dimensions: 1536, // Only supported in text-embedding-3 and later
   }),
   values: chunks.map((chunk) => chunk.text),
 });
@@ -54,25 +54,26 @@ const { embeddings } = await embedMany({
 //   values: chunks.map((chunk) => chunk.text),
 // });
 
+const upstashUrl = process.env.UPSTASH_URL;
+console.log(`Attempting to connect to Upstash at: ${upstashUrl}`); // Log the URL
+
 const store = new UpstashVector({
-url: process.env.UPSTASH_URL!,
+url: upstashUrl!,
 token: process.env.UPSTASH_TOKEN!
 })
 try {
+  console.log(`Attempting to create Upstash index 'embeddings' with 256 dimensions...`);
   await store.createIndex({
     indexName: "embeddings",
-    dimension: 256, // Match your embedding model (text-embedding-3-small with dimensions: 256)
+    dimension: 1536,
   });
-  console.log("Upstash index 'embeddings' created successfully.");
+  console.log("Upstash index 'embeddings' creation attempt finished. Assuming success if no error thrown or caught specifically for 'already exists'.");
 } catch (e: any) {
-  // Check if the error message indicates the index already exists
-  // This specific error message string might vary based on the Upstash client or service response
-  if (e.message && (e.message.includes("already exists") || e.message.includes("already created"))) {
-    console.log("Upstash index 'embeddings' already exists.");
+  console.error("Detailed error during createIndex:", JSON.stringify(e, Object.getOwnPropertyNames(e)));
+  if (e.message && (e.message.toLowerCase().includes("already exists") || e.message.toLowerCase().includes("already created") || e.message.toLowerCase().includes("exists"))) {
+    console.log("Upstash index 'embeddings' likely already exists.");
   } else {
-    console.error("Error creating Upstash index:", e);
-    // Depending on the error, you might want to re-throw it or handle it differently
-    // For now, we'll log and continue, but in production, you might want to stop
+    console.error("Failed to create Upstash index 'embeddings' due to an unexpected error:", e.message);
   }
 }
 // Store embeddings with their corresponding metadata
